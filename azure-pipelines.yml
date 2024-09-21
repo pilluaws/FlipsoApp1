@@ -1,0 +1,33 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: true
+    zipAfterPublish: true
+    outputPath: '$(Build.ArtifactStagingDirectory)'
+
+# Optional: Deploy
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'tcscomprod.onmicrosoft.com'
+    appName: 'hello-world-api'
+    package: '$(Build.ArtifactStagingDirectory)/*.zip'
